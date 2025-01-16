@@ -1,0 +1,10 @@
+Waf: Entering directory `/home/dkp/ndnSIM（cpa）/ns-3/build'
+[2461/3434] Compiling src/ndnSIM/NFD/daemon/fw/forwarder.cpp
+../src/ndnSIM/NFD/daemon/fw/forwarder.cpp: In function ‘void nfd::detectWDCallback(nfd::Forwarder*)’:
+../src/ndnSIM/NFD/daemon/fw/forwarder.cpp:91:8: error: ‘class nfd::Forwarder’ has no member named ‘computePITWD’
+   91 |   ptr->computePITWD.Ping(ptr->watchdogPeriod);
+      |        ^~~~~~~~~~~~
+
+Waf: Leaving directory `/home/dkp/ndnSIM（cpa）/ns-3/build'
+Build failed
+ -> task in 'ns3-ndnSIM' failed with exit status 1 (run with -v to display more information)

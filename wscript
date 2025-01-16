@@ -744,6 +744,9 @@ def configure(conf):
     # Handle boost
     configure_boost(conf)
 
+    # 检查jsoncpp库
+    conf.check_cfg(package='jsoncpp', args=['--cflags', '--libs'], uselib_store='JSONCPP', mandatory=True)
+
     # Set this so that the lists won't be printed at the end of this
     # configure command.
     conf.env['PRINT_BUILT_MODULES_AT_END'] = False
@@ -1306,6 +1309,12 @@ def build(bld):
     # Do not print the modules built if build command was "clean"
     if bld.cmd == 'clean':
         bld.env['PRINT_BUILT_MODULES_AT_END'] = False
+
+    # 将jsoncpp库添加到所有模块的依赖项中
+    for module in bld.env['NS3_ENABLED_MODULES'] + bld.env['NS3_ENABLED_CONTRIBUTED_MODULES']:
+        module_obj = bld.get_tgen_by_name(module)
+        if module_obj:
+            module_obj.use.append('JSONCPP')
 
     if Options.options.run:
         # Check that the requested program name is valid
