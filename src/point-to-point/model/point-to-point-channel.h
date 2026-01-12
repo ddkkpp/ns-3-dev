@@ -24,6 +24,7 @@
 #include "ns3/ptr.h"
 #include "ns3/nstime.h"
 #include "ns3/data-rate.h"
+#include "ns3/random-variable-stream.h"
 #include "ns3/traced-callback.h"
 
 namespace ns3 {
@@ -150,6 +151,8 @@ private:
   static const std::size_t N_DEVICES = 2;
 
   Time          m_delay;    //!< Propagation delay
+  bool          m_enableDynamicDelay; //!< If true, sample delay from RNG per packet
+  Ptr<RandomVariableStream> m_dynamicDelayRv; //!< RNG (seconds) used when dynamic delay enabled
   std::size_t        m_nDevices; //!< Devices of this channel
 
   /**
