@@ -22,6 +22,8 @@
 #include "ns3/packet.h"
 #include "ns3/simulator.h"
 #include "ns3/log.h"
+#include "ns3/boolean.h"
+#include "ns3/pointer.h"
 
 namespace ns3 {
 
@@ -40,6 +42,16 @@ PointToPointChannel::GetTypeId (void)
                    TimeValue (Seconds (0)),
                    MakeTimeAccessor (&PointToPointChannel::m_delay),
                    MakeTimeChecker ())
+    .AddAttribute ("EnableDynamicDelay",
+                   "If true, sample the propagation delay for each transmission from DynamicDelayRandomVariable (in seconds).",
+                   BooleanValue (false),
+                   MakeBooleanAccessor (&PointToPointChannel::m_enableDynamicDelay),
+                   MakeBooleanChecker ())
+    .AddAttribute ("DynamicDelayRandomVariable",
+                   "RandomVariableStream used to sample per-transmission propagation delay (seconds). Values < 0 are clamped to 0.",
+                   PointerValue (),
+                   MakePointerAccessor (&PointToPointChannel::m_dynamicDelayRv),
+                   MakePointerChecker<RandomVariableStream> ())
     .AddTraceSource ("TxRxPointToPoint",
                      "Trace source indicating transmission of packet "
                      "from the PointToPointChannel, used by the Animation "
@@ -57,6 +69,8 @@ PointToPointChannel::PointToPointChannel()
   :
     Channel (),
     m_delay (Seconds (0.)),
+    m_enableDynamicDelay (false),
+    m_dynamicDelayRv (0),
     m_nDevices (0)
 {
   NS_LOG_FUNCTION_NOARGS ();
@@ -97,12 +111,23 @@ PointToPointChannel::TransmitStart (
 
   uint32_t wire = src == m_link[0].m_src ? 0 : 1;
 
+  Time delay = m_delay;
+  if (m_enableDynamicDelay && m_dynamicDelayRv)
+    {
+      double delaySeconds = m_dynamicDelayRv->GetValue ();
+      if (delaySeconds < 0.0)
+        {
+          delaySeconds = 0.0;
+        }
+      delay = Seconds (delaySeconds);
+    }
+
   Simulator::ScheduleWithContext (m_link[wire].m_dst->GetNode ()->GetId (),
-                                  txTime + m_delay, &PointToPointNetDevice::Receive,
+                                  txTime + delay, &PointToPointNetDevice::Receive,
                                   m_link[wire].m_dst, p->Copy ());
 
   // Call the tx anim callback on the net device
-  m_txrxPointToPoint (p, src, m_link[wire].m_dst, txTime, txTime + m_delay);
+  m_txrxPointToPoint (p, src, m_link[wire].m_dst, txTime, txTime + delay);
   return true;
 }
 
